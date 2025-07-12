@@ -1,20 +1,22 @@
-package main
+package client
 
 import (
 	"fmt"
 	"time"
 
+	"mqqt_go/config"
+	"mqqt_go/mqtt/handlers"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-func createMQTTClient() mqtt.Client {
+func CreateMQTTClient() mqtt.Client {
 	opts := mqtt.NewClientOptions()
 	
 	// Connection settings
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", Broker, Port))
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", config.Broker, config.Port))
 	opts.SetClientID(fmt.Sprintf("go_mqtt_client_%d", time.Now().Unix()))
-	opts.SetUsername(Username)
-	opts.SetPassword(Password)
+	opts.SetUsername(config.Username)
+	opts.SetPassword(config.Password)
 	
 	// Keep-alive and timeout settings
 	opts.SetKeepAlive(30 * time.Second)          // Reduced from 60s for faster detection
@@ -36,12 +38,12 @@ func createMQTTClient() mqtt.Client {
 	opts.SetResumeSubs(true)                     // Resume subscriptions on reconnect
 	
 	// Message handling
-	opts.SetDefaultPublishHandler(messagePubHandler)
+	opts.SetDefaultPublishHandler(handlers.MessagePubHandler)
 	
 	// Event handlers
-	opts.OnConnect = connectHandler
-	opts.OnConnectionLost = connectLostHandler
-	opts.OnReconnecting = reconnectHandler
+	opts.OnConnect = handlers.ConnectHandler
+	opts.OnConnectionLost = handlers.ConnectLostHandler
+	opts.OnReconnecting = handlers.ReconnectHandler
 	
 	// Create client
 	client := mqtt.NewClient(opts)

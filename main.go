@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"mqqt_go/mqtt/client"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -18,7 +19,7 @@ func main() {
 	
 	fmt.Println("Starting MQTT client...")
 	
-	client := createMQTTClient()
+	client := client.CreateMQTTClient()
 	
 	// Connect with retry logic
 	for {

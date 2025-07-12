@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -7,10 +7,11 @@ import (
 	"os"
 	"time"
 
+	"mqqt_go/config"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+var MessagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	fmt.Printf("[%s] DEBUG: messagePubHandler called for topic: %s\n", 
 		time.Now().Format("2006-01-02 15:04:05"), msg.Topic())
 	fmt.Printf("[%s] Received message from topic: %s\n", 
@@ -51,21 +52,21 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 	fmt.Printf("[%s] Message saved to %s\n", time.Now().Format("2006-01-02 15:04:05"), filename)
 }
 
-var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
+var ConnectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 	fmt.Printf("[%s] Connected to MQTT broker\n", time.Now().Format("2006-01-02 15:04:05"))
 	
 	// Subscribe with retry logic
-	if token := client.Subscribe(Topic, 1, nil); token.Wait() && token.Error() != nil {
+	if token := client.Subscribe(config.Topic, 1, nil); token.Wait() && token.Error() != nil {
 		log.Printf("Failed to subscribe: %v", token.Error())
 		return
 	}
-	fmt.Printf("[%s] Subscribed to topic: %s\n", time.Now().Format("2006-01-02 15:04:05"), Topic)
+	fmt.Printf("[%s] Subscribed to topic: %s\n", time.Now().Format("2006-01-02 15:04:05"), config.Topic)
 }
 
-var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
+var ConnectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 	fmt.Printf("[%s] Connection lost: %v\n", time.Now().Format("2006-01-02 15:04:05"), err)
 }
 
-var reconnectHandler mqtt.ReconnectHandler = func(client mqtt.Client, opts *mqtt.ClientOptions) {
+var ReconnectHandler mqtt.ReconnectHandler = func(client mqtt.Client, opts *mqtt.ClientOptions) {
 	fmt.Printf("[%s] Attempting to reconnect...\n", time.Now().Format("2006-01-02 15:04:05"))
 }
