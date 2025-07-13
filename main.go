@@ -8,11 +8,22 @@ import (
 	"syscall"
 	"time"
 
+	"mqqt_go/config"
+	"mqqt_go/database"
 	"mqqt_go/mqtt/client"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 func main() {
+	// Initialize database
+	database.InitDB(
+		config.DBHost,
+		config.DBPort,
+		config.DBUser,
+		config.DBPassword,
+		config.DBName,
+	)
+	defer database.DB.Close()
 	// Enable MQTT client logging for debugging
 	mqtt.DEBUG = log.New(os.Stdout, "[MQTT-DEBUG] ", log.LstdFlags)
 	mqtt.ERROR = log.New(os.Stdout, "[MQTT-ERROR] ", log.LstdFlags)

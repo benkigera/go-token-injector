@@ -14,6 +14,12 @@ var (
 	Topic    string
 	Username string
 	Password string
+
+	DBHost     string
+	DBPort     string
+	DBUser     string
+	DBPassword string
+	DBName     string
 )
 
 func init() {
@@ -38,4 +44,10 @@ func init() {
 	if Topic == "" {
 		log.Fatal("MQTT_TOPIC not set in .env")
 	}
+
+	DBHost = os.Getenv("DB_HOST")
+	DBPort = os.Getenv("DB_PORT")
+	DBUser = os.Getenv("DB_USER")
+	DBPassword = os.Getenv("DB_PASSWORD")
+	DBName = os.Getenv("DB_NAME")
 }

@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"mqqt_go/config"
+	"mqqt_go/database"
+
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -18,9 +20,34 @@ var MessagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 		time.Now().Format("2006-01-02 15:04:05"), msg.Topic())
 
 	// Unmarshal the JSON payload
-	var data []map[string]interface{}
+	var data []map[string]interface{} // Declare data here
 	if err := json.Unmarshal(msg.Payload(), &data); err != nil {
 		log.Printf("Error unmarshaling JSON: %v", err)
+		return
+	}
+	fmt.Printf("[%s] DEBUG: JSON unmarshaled successfully. Items found: %d\n", time.Now().Format("2006-01-02 15:04:05"), len(data))
+
+	// Generate a single timestamp for this reading
+	readingTimestamp := time.Now()
+
+	// Store data in the database
+	for _, item := range data {
+		name, _ := item["n"].(string)
+		value := item["v"]
+		unit, _ := item["u"].(string)
+
+		fmt.Printf("[%s] DEBUG: Attempting to insert/update: Name=%s, Value=%v, Unit=%s\n", time.Now().Format("2006-01-02 15:04:05"), name, value, unit)
+		if err := database.InsertOrUpdateMeterData(name, value, unit, readingTimestamp); err != nil {
+			log.Printf("[%s] ERROR: Failed to insert/update data for %s: %v\n", time.Now().Format("2006-01-02 15:04:05"), name, err)
+		} else {
+			fmt.Printf("[%s] DEBUG: Successfully inserted/updated data for %s\n", time.Now().Format("2006-01-02 15:04:05"), name)
+		}
+	}
+
+	// Read AvailableCredit from the database
+	availableCreditValue, availableCreditUnit, err := database.GetMeterData("AvailableCredit")
+	if err != nil {
+		log.Printf("Error getting AvailableCredit from DB: %v", err)
 		return
 	}
 
@@ -28,16 +55,10 @@ var MessagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 	var outputContent string
 	outputContent += fmt.Sprintf("--- Update at %s ---\n", time.Now().Format("2006-01-02 15:04:05"))
 
-	for _, item := range data {
-		name, _ := item["n"].(string)
-		value := item["v"]
-		unit, hasUnit := item["u"].(string)
-
-		if hasUnit {
-			outputContent += fmt.Sprintf("Name: %s, Value: %v, Unit: %s\n", name, value, unit)
-		} else {
-			outputContent += fmt.Sprintf("Name: %s, Value: %v\n", name, value)
-		}
+	if availableCreditValue != "" {
+		outputContent += fmt.Sprintf("Available Credit: %s %s\n", availableCreditValue, availableCreditUnit)
+	} else {
+		outputContent += "Available Credit: Not available\n"
 	}
 
 	// Define the output filename

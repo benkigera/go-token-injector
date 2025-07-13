@@ -1,14 +1,2 @@
---- Update at 2025-07-13 02:34:23 ---
-Name: SerialNumber, Value: 09000030529
-Name: DeviceType, Value: 1P-EnergyMeter
-Name: Producer, Value: Dani
-Name: BillingType, Value: Prepaid
-Name: MeterStatus, Value: (0F)t
-Name: TamperStatus, Value: (0000)
-Name: SupplyGroup, Value: (008135)
-Name: kWhConsumed, Value: 88.6, Unit: kWh
-Name: kWhForward, Value: 0, Unit: kWh
-Name: kWhReverse, Value: 0, Unit: kWh
-Name: PeakDemand, Value: 0, Unit: kWh
-Name: PowerLimit, Value: 18400, Unit: W
-Name: AvailableCredit, Value: 732.8, Unit: kWh
+--- Update at 2025-07-13 04:07:35 ---
+Available Credit: 732.8 kWh
