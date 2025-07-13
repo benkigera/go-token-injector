@@ -53,11 +53,11 @@ func init() {
 		log.Fatal("MQTT_TOPIC not set")
 	}
 
-	DBHost = os.Getenv("DB_HOST")
-	DBPort = os.Getenv("DB_PORT")
-	DBUser = os.Getenv("DB_USER")
-	DBPassword = os.Getenv("DB_PASSWORD")
-	DBName = os.Getenv("DB_NAME")
+	DBHost = os.Getenv("PGHOST")
+	DBPort = os.Getenv("PGPORT")
+	DBUser = os.Getenv("PGUSER")
+	DBPassword = os.Getenv("PGPASSWORD")
+	DBName = os.Getenv("PGDATABASE")
 
 	APIPort = os.Getenv("API_PORT")
 	if APIPort == "" {
