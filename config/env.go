@@ -28,14 +28,17 @@ var (
 )
 
 func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+	// Load .env file only if not in production environment
+	if os.Getenv("APP_ENV") != "production" {
+		if err := godotenv.Load(); err != nil {
+			log.Printf("Warning: Error loading .env file: %v (This is expected in production environments)", err)
+		}
 	}
 
 	Broker = os.Getenv("MQTT_BROKER")
 	portStr := os.Getenv("MQTT_PORT")
 	if portStr == "" {
-		log.Fatal("MQTT_PORT not set in .env")
+		log.Fatal("MQTT_PORT not set")
 	}
 	var err error
 	Port, err = strconv.Atoi(portStr)
@@ -47,7 +50,7 @@ func init() {
 	Password = os.Getenv("MQTT_PASSWORD")
 	Topic = os.Getenv("MQTT_TOPIC")
 	if Topic == "" {
-		log.Fatal("MQTT_TOPIC not set in .env")
+		log.Fatal("MQTT_TOPIC not set")
 	}
 
 	DBHost = os.Getenv("DB_HOST")
@@ -58,21 +61,21 @@ func init() {
 
 	APIPort = os.Getenv("API_PORT")
 	if APIPort == "" {
-		log.Fatal("API_PORT not set in .env")
+		log.Fatal("API_PORT not set")
 	}
 
 	ExternalAPIBaseURL = os.Getenv("EXTERNAL_API_BASE_URL")
 	if ExternalAPIBaseURL == "" {
-		log.Fatal("EXTERNAL_API_BASE_URL not set in .env")
+		log.Fatal("EXTERNAL_API_BASE_URL not set")
 	}
 
 	ExternalAPIAuthToken = os.Getenv("EXTERNAL_API_AUTH_TOKEN")
 	if ExternalAPIAuthToken == "" {
-		log.Fatal("EXTERNAL_API_AUTH_TOKEN not set in .env")
+		log.Fatal("EXTERNAL_API_AUTH_TOKEN not set")
 	}
 
 	MQTTInjectionResponseTopicBase = os.Getenv("MQTT_INJECTION_RESPONSE_TOPIC_BASE")
 	if MQTTInjectionResponseTopicBase == "" {
-		log.Fatal("MQTT_INJECTION_RESPONSE_TOPIC_BASE not set in .env")
+		log.Fatal("MQTT_INJECTION_RESPONSE_TOPIC_BASE not set")
 	}
 }
