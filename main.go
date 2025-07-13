@@ -23,6 +23,7 @@ import (
 )
 
 func main() {
+	fmt.Printf("MQTT_PORT from environment: %s\n", os.Getenv("MQTT_PORT"))
 	// Initialize database
 	database.InitDB(
 		config.DBHost,
@@ -31,6 +32,7 @@ func main() {
 		config.DBPassword,
 		config.DBName,
 	)
+
 	defer database.DB.Close()
 	// Enable MQTT client logging for debugging
 	mqtt.DEBUG = log.New(os.Stdout, "[MQTT-DEBUG] ", log.LstdFlags)
