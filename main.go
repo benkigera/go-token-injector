@@ -9,10 +9,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin" // Added for Gin framework
-	"mqqt_go/api/updater/handlers"
-	"mqqt_go/api/updater/repositories"
-	"mqqt_go/api/updater/routes"
-	"mqqt_go/api/updater/services"
+	injector_handlers "mqqt_go/api/injector/handlers" // Added for injector handlers
+	injector_routes "mqqt_go/api/injector/routes" // Added for injector routes
+	injector_services "mqqt_go/api/injector/services" // Added for injector services
+	updater_handlers "mqqt_go/api/updater/handlers"
+	updater_repositories "mqqt_go/api/updater/repositories"
+	updater_routes "mqqt_go/api/updater/routes"
+	updater_services "mqqt_go/api/updater/services"
 	"mqqt_go/config"
 	"mqqt_go/database"
 	"mqqt_go/mqtt/client"
@@ -48,15 +51,20 @@ func main() {
 	}
 
 	// Setup API components
-	meterDataRepo := repositories.NewMeterDataRepository("./latest_meter_data.txt")
-	meterDataService := services.NewMeterDataService(meterDataRepo)
-	meterDataHandler := handlers.NewMeterDataHandler(meterDataService)
+	meterDataRepo := updater_repositories.NewMeterDataRepository("./latest_meter_data.txt")
+	meterDataService := updater_services.NewMeterDataService(meterDataRepo)
+	meterDataHandler := updater_handlers.NewMeterDataHandler(meterDataService)
+
+	// Setup Injection API components
+	injectionService := injector_services.NewInjectionService(client)
+	injectionHandler := injector_handlers.NewInjectionHandler(injectionService)
 
 	// Initialize Gin router
 	router := gin.Default()
 
 	// Setup API routes
-	routes.SetupMeterDataRoutes(router, meterDataHandler)
+	updater_routes.SetupMeterDataRoutes(router, meterDataHandler)
+	injector_routes.SetupInjectionRoutes(router, injectionHandler)
 
 	// Start HTTP server in a new goroutine
 	go func() {

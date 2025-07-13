@@ -9,6 +9,8 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+var mqttClient mqtt.Client
+
 func CreateMQTTClient() mqtt.Client {
 	opts := mqtt.NewClientOptions()
 	
@@ -46,6 +48,10 @@ func CreateMQTTClient() mqtt.Client {
 	opts.OnReconnecting = handlers.ReconnectHandler
 	
 	// Create client
-	client := mqtt.NewClient(opts)
-	return client
+	mqttClient = mqtt.NewClient(opts)
+	return mqttClient
+}
+
+func GetMQTTClient() mqtt.Client {
+	return mqttClient
 }

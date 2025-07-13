@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	"mqqt_go/api/updater/models"
@@ -16,11 +17,46 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+// responseChannels stores channels for dynamic MQTT topic responses
+var responseChannels = make(map[string]chan []byte)
+var mu sync.Mutex // Mutex to protect access to responseChannels
+
+// RegisterResponseChannel registers a channel to receive messages for a specific topic.
+func RegisterResponseChannel(topic string, ch chan []byte) {
+	mu.Lock()
+	defer mu.Unlock()
+	responseChannels[topic] = ch
+	log.Printf("Registered response channel for topic: %s\n", topic)
+}
+
+// UnregisterResponseChannel unregisters a channel for a specific topic.
+func UnregisterResponseChannel(topic string) {
+	mu.Lock()
+	defer mu.Unlock()
+	delete(responseChannels, topic)
+	log.Printf("Unregistered response channel for topic: %s\n", topic)
+}
+
 var MessagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	fmt.Printf("[%s] DEBUG: messagePubHandler called for topic: %s\n", 
 		time.Now().Format("2006-01-02 15:04:05"), msg.Topic())
 	fmt.Printf("[%s] Received message from topic: %s\n", 
 		time.Now().Format("2006-01-02 15:04:05"), msg.Topic())
+
+	// Check if there's a registered channel for this topic
+	mu.Lock()
+	ch, ok := responseChannels[msg.Topic()]
+	mu.Unlock()
+	if ok {
+		log.Printf("Forwarding message for topic %s to registered channel\n", msg.Topic())
+		select {
+		case ch <- msg.Payload():
+			// Message sent successfully
+		case <-time.After(1 * time.Second): // Small timeout to prevent blocking
+			log.Println("Timeout sending MQTT message to registered channel")
+		}
+		return // Message handled by dynamic subscriber, do not process further for meter_data
+	}
 
 	// Initialize MQTT message repository
 	mqttMsgRepo := repositories.NewMQTTMessageRepository(database.DB)

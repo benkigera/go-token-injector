@@ -22,6 +22,9 @@ var (
 	DBName     string
 
 	APIPort string
+	ExternalAPIBaseURL string
+	ExternalAPIAuthToken string
+	MQTTInjectionResponseTopicBase string
 )
 
 func init() {
@@ -56,5 +59,20 @@ func init() {
 	APIPort = os.Getenv("API_PORT")
 	if APIPort == "" {
 		log.Fatal("API_PORT not set in .env")
+	}
+
+	ExternalAPIBaseURL = os.Getenv("EXTERNAL_API_BASE_URL")
+	if ExternalAPIBaseURL == "" {
+		log.Fatal("EXTERNAL_API_BASE_URL not set in .env")
+	}
+
+	ExternalAPIAuthToken = os.Getenv("EXTERNAL_API_AUTH_TOKEN")
+	if ExternalAPIAuthToken == "" {
+		log.Fatal("EXTERNAL_API_AUTH_TOKEN not set in .env")
+	}
+
+	MQTTInjectionResponseTopicBase = os.Getenv("MQTT_INJECTION_RESPONSE_TOPIC_BASE")
+	if MQTTInjectionResponseTopicBase == "" {
+		log.Fatal("MQTT_INJECTION_RESPONSE_TOPIC_BASE not set in .env")
 	}
 }
