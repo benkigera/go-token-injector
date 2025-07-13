@@ -8,6 +8,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-gonic/gin" // Added for Gin framework
+	"mqqt_go/api/updater/handlers"
+	"mqqt_go/api/updater/repositories"
+	"mqqt_go/api/updater/routes"
+	"mqqt_go/api/updater/services"
 	"mqqt_go/config"
 	"mqqt_go/database"
 	"mqqt_go/mqtt/client"
@@ -41,6 +46,25 @@ func main() {
 		}
 		break
 	}
+
+	// Setup API components
+	meterDataRepo := repositories.NewMeterDataRepository("./latest_meter_data.txt")
+	meterDataService := services.NewMeterDataService(meterDataRepo)
+	meterDataHandler := handlers.NewMeterDataHandler(meterDataService)
+
+	// Initialize Gin router
+	router := gin.Default()
+
+	// Setup API routes
+	routes.SetupMeterDataRoutes(router, meterDataHandler)
+
+	// Start HTTP server in a new goroutine
+	go func() {
+		log.Printf("HTTP server starting on port %s", config.APIPort)
+		if err := router.Run(":" + config.APIPort); err != nil {
+			log.Fatalf("HTTP server failed: %v", err)
+		}
+	}()
 	
 	// Set up graceful shutdown
 	c := make(chan os.Signal, 1)

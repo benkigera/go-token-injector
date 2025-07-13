@@ -1,12 +1,15 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
+	"mqqt_go/api/updater/models"
+	"mqqt_go/api/updater/repositories"
 	"mqqt_go/config"
 	"mqqt_go/database"
 
@@ -19,8 +22,26 @@ var MessagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 	fmt.Printf("[%s] Received message from topic: %s\n", 
 		time.Now().Format("2006-01-02 15:04:05"), msg.Topic())
 
+	// Initialize MQTT message repository
+	mqttMsgRepo := repositories.NewMQTTMessageRepository(database.DB)
+
+	// Create MQTTMessage model
+	mqttMessage := &models.MQTTMessage{
+		Topic:     msg.Topic(),
+		Payload:   string(msg.Payload()),
+		ReceivedAt: time.Now(),
+	}
+
+	// Save raw MQTT message to database
+	if err := mqttMsgRepo.SaveMQTTMessage(context.Background(), mqttMessage); err != nil {
+		log.Printf("[%s] ERROR: Failed to save raw MQTT message to DB: %v\n", time.Now().Format("2006-01-02 15:04:05"), err)
+	} else {
+		fmt.Printf("[%s] DEBUG: Raw MQTT message saved to DB with ID: %d\n", time.Now().Format("2006-01-02 15:04:05"), mqttMessage.ID)
+	}
+
 	// Unmarshal the JSON payload
 	var data []map[string]interface{} // Declare data here
+	fmt.Printf("[%s] Received JSON payload: %s\n", time.Now().Format("2006-01-02 15:04:05"), msg.Payload())
 	if err := json.Unmarshal(msg.Payload(), &data); err != nil {
 		log.Printf("Error unmarshaling JSON: %v", err)
 		return

@@ -20,6 +20,8 @@ var (
 	DBUser     string
 	DBPassword string
 	DBName     string
+
+	APIPort string
 )
 
 func init() {
@@ -50,4 +52,9 @@ func init() {
 	DBUser = os.Getenv("DB_USER")
 	DBPassword = os.Getenv("DB_PASSWORD")
 	DBName = os.Getenv("DB_NAME")
+
+	APIPort = os.Getenv("API_PORT")
+	if APIPort == "" {
+		log.Fatal("API_PORT not set in .env")
+	}
 }

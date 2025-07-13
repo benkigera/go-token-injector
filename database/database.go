@@ -36,6 +36,13 @@ func InitDB(host, port, user, password, dbname string) {
 		last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		reading_timestamp TIMESTAMP
 	);
+
+	CREATE TABLE IF NOT EXISTS mqtt_messages (
+		id SERIAL PRIMARY KEY,
+		topic TEXT NOT NULL,
+		payload TEXT NOT NULL,
+		received_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+	);
 	`
 
 	_, err = DB.Exec(createTableSQL)
