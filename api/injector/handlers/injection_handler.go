@@ -32,5 +32,9 @@ func (h *InjectionHandler) InjectToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, response)
+	if response.Status == "failed" {
+		c.JSON(http.StatusBadRequest, response)
+	} else {
+		c.JSON(http.StatusOK, response)
+	}
 }

@@ -20,3 +20,9 @@ type MQTTInjectionResponse struct {
 }
 
 type MQTTInjectionResponsePayload []MQTTInjectionResponse
+
+type InjectionAPIResponse struct {
+	Status  string      `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+}

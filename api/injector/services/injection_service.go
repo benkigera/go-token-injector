@@ -17,7 +17,7 @@ import (
 )
 
 type InjectionService interface {
-	InjectToken(ctx context.Context, req *models.InjectionRequest) (models.MQTTInjectionResponsePayload, error)
+	InjectToken(ctx context.Context, req *models.InjectionRequest) (*models.InjectionAPIResponse, error)
 }
 
 type injectionService struct {
@@ -28,7 +28,7 @@ func NewInjectionService(mqttClient mqtt.Client) InjectionService {
 	return &injectionService{mqttClient: mqttClient}
 }
 
-func (s *injectionService) InjectToken(ctx context.Context, req *models.InjectionRequest) (models.MQTTInjectionResponsePayload, error) {
+func (s *injectionService) InjectToken(ctx context.Context, req *models.InjectionRequest) (*models.InjectionAPIResponse, error) {
 	responseTopic := fmt.Sprintf("%s/%s", config.MQTTInjectionResponseTopicBase, req.MeterNumber)
 	
 	// Channel to receive MQTT response
@@ -107,7 +107,30 @@ func (s *injectionService) InjectToken(ctx context.Context, req *models.Injectio
 	// Wait for MQTT response with a timeout
 	select {
 	case mqttResponse := <-responseChan:
-		return mqttResponse, nil
+		var injectedUnits float64
+		var creditTokenAck float64
+
+		for _, item := range mqttResponse {
+			if item.N == "injected-units" {
+				injectedUnits, _ = item.V.(float64)
+			} else if item.N == "credit-token-ack" {
+				creditTokenAck, _ = item.V.(float64)
+			}
+		}
+
+		if creditTokenAck == 1 && injectedUnits > 0 {
+			return &models.InjectionAPIResponse{
+				Status:  "success",
+				Message: fmt.Sprintf("Token injected successfully. Injected units: %.2f", injectedUnits),
+				Data:    mqttResponse,
+			}, nil
+		} else {
+			return &models.InjectionAPIResponse{
+				Status:  "failed",
+				Message: "Token injection failed. Please check your token or try again.",
+				Data:    mqttResponse,
+			}, nil
+		}
 	case <-time.After(30 * time.Second): // Configurable timeout
 		return nil, fmt.Errorf("timeout waiting for MQTT response for meter %s", req.MeterNumber)
 	}
