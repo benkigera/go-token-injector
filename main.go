@@ -8,10 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin" // Added for Gin framework
-	injector_handlers "mqqt_go/api/injector/handlers" // Added for injector handlers
-	injector_routes "mqqt_go/api/injector/routes" // Added for injector routes
-	injector_services "mqqt_go/api/injector/services" // Added for injector services
+	injector_handlers "mqqt_go/api/injector/handlers"
+	injector_routes "mqqt_go/api/injector/routes"
+	injector_services "mqqt_go/api/injector/services"
 	updater_handlers "mqqt_go/api/updater/handlers"
 	updater_repositories "mqqt_go/api/updater/repositories"
 	updater_routes "mqqt_go/api/updater/routes"
@@ -19,7 +18,10 @@ import (
 	"mqqt_go/config"
 	"mqqt_go/database"
 	"mqqt_go/mqtt/client"
+
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -63,6 +65,18 @@ func main() {
 
 	// Initialize Gin router
 	router := gin.Default()
+
+	// Configure CORS middleware
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
+	
 
 	// Setup API routes
 	updater_routes.SetupMeterDataRoutes(router, meterDataHandler)
